@@ -60,23 +60,27 @@ class Py3status:
     def ns_checker(self):
         response = {
             "cached_until": self.py3.time_in(self.cache_timeout),
-            "color": self.py3.COLOR_GOOD,
+            "color": self.py3.COLOR_BAD,
         }
         count_nok = 0
         count_ok = 0
         nameservers = []
-        status = "OK"
+        status = "NOK"
 
         my_resolver = dns.resolver.Resolver()
         my_resolver.lifetime = self.lifetime
         if self.resolvers:
             my_resolver.nameservers = self.resolvers
 
-        my_ns = my_resolver.resolve(self.domain, "NS")
+        try:
+            my_ns = my_resolver.resolve(self.domain, "NS")
+            # Insert each NS ip address in nameservers
+            for ns in my_ns:
+                nameservers.append(str(socket.gethostbyname(str(ns))))
+        except Exception as e:
+            self.py3.log(f"ns_checker: {e}")
 
         # Insert each NS ip address in nameservers
-        for ns in my_ns:
-            nameservers.append(str(socket.gethostbyname(str(ns))))
         for ns in self.nameservers:
             nameservers.append(str(ns))
 
@@ -85,11 +89,11 @@ class Py3status:
             my_resolver.nameservers = [ns]
             try:
                 my_resolver.resolve(self.domain, "A")
+                status = "OK"
+                response["color"] = self.py3.COLOR_GOOD
                 count_ok += 1
             except:  # noqa e722
                 count_nok += 1
-                status = "NOK"
-                response["color"] = self.py3.COLOR_BAD
 
         response["full_text"] = self.py3.safe_format(
             self.format,
