@@ -1117,3 +1117,6 @@ class Py3statusWrapper:
 
                 # build output string and dump to stdout
                 self.output_format.write_line(output)
+                # in oneshot mode return after writing the first line
+                if self.config.get("oneshot"):
+                    return

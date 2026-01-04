@@ -114,6 +114,13 @@ def parse_cli_args():
         help="run py3status without i3status",
     )
     parser.add_argument(
+        "-o",
+        "--oneshot",
+        action="store_true",
+        dest="oneshot",
+        help="exit after the first iteration of the event loop",
+    )
+    parser.add_argument(
         "-t",
         "--timeout",
         action="store",
